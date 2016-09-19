@@ -4,7 +4,7 @@ import {IRouteConfiguration} from "hapi";
 import {IReply} from "hapi";
 import {Request} from "hapi";
 import {ExecuteSqlBatchSocketRequest, dbList} from "./MsSqlDb";
-//import {dbList, ExecuteSqlBatchSocketRequest} from "./Db";
+//import {dbList, ExecuteSqlBatchSocketRequest} from "./Db"6;
 
 
 let server = new Server();
