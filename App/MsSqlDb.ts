@@ -50,6 +50,7 @@ export class MsSqlDb  {
     dbName: string;
 
     host: string;
+    instance:string;
     port: number;
     user: string;
     password: string;
@@ -57,8 +58,9 @@ export class MsSqlDb  {
 
     executeSqlBatch(reply: IReply, request: ExecuteSqlBatchSocketRequest, attemptsCounter: number = 0) {
         //console.time(request.queryId);
-
+        let options = {instanceName: this.instance} as any;
         let config: config = {
+            driver: "msnodesqlv8",
             pool: {
                 min: 0,
                 max: 20,
@@ -68,7 +70,8 @@ export class MsSqlDb  {
             port: this.port || 1433,
             user: this.user,
             database: this.database,
-            password: this.password
+            password: this.password,
+            options: options
         }
 
         let connectionId = JSON.stringify(config);
@@ -147,25 +150,25 @@ export class MsSqlDb  {
         if (pools[connectionId] && connection && connection.connected) {
             doRequest();
         }
-        else {
-            let counter = 0;
-            let interval = setInterval(()=> {
-                //console.log("interval",counter);
-                counter++;
-                if (counter > 1000 || !connection || !pools[connectionId]) {
-                    clearInterval(interval);
-                    let answer: ExecuteSqlBatchSocketAnswer = {
-                        error: `"mssql connection error, server:${config.server}, db:${config.database}, login:${config.user}`,
-                        errorSql: request.sql.join(";\n")
-                    };
-                    reply(answer);
-                }
-                else if (connection.connected) {
-                    clearInterval(interval);
-                    doRequest();
-                }
-            }, 10)
-        }
+        // else {
+        //     let counter = 0;
+        //     let interval = setInterval(()=> {
+        //         //console.log("interval",counter);
+        //         counter++;
+        //         if (counter > 1000 || !connection || !pools[connectionId]) {
+        //             clearInterval(interval);
+        //             let answer: ExecuteSqlBatchSocketAnswer = {
+        //                 error: `"mssql connection error, server:${config.server}, db:${config.database}, login:${config.user}`,
+        //                 errorSql: request.sql.join(";\n")
+        //             };
+        //             reply(answer);
+        //         }
+        //         else if (connection.connected) {
+        //             clearInterval(interval);
+        //             doRequest();
+        //         }
+        //     }, 1000)
+        // }
 
 
     }
@@ -175,12 +178,13 @@ export class MsSqlDb  {
 let db = new MsSqlDb();
 db.dbName = "wms";
 
-//schemaDb.host = "ps-web";
-//schemaDb.port = 1433;
-db.host = "5.19.239.191";
-db.port = 52538;
+db.host = "dark";
+db.instance ="sql2008";
+db.port = 1433;
+//db.host = "5.19.239.191";
+//db.port = 52538;
 
-db.user = "sa1";
-db.password = "sonyk";
-db.database = "WMS";
+db.user = "sa";
+db.password = "";
+db.database = "WMS2017";
 dbList[db.dbName] = db;
