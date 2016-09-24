@@ -7,6 +7,8 @@ import * as _ from 'lodash';
 
 import {IPool, config, Connection, Request, TYPES} from "mssql";
 import {IReply} from "hapi";
+import {ServerConfig} from "./ServerConfig";
+const  crypto = require("crypto-js");
 
 let pools: { [connectionId: string]: Connection; } = {};
 
@@ -46,6 +48,7 @@ export interface ExecuteSqlBatchSocketAnswer {
 }
 
 
+
 export class MsSqlDb  {
     dbName: string;
 
@@ -55,6 +58,16 @@ export class MsSqlDb  {
     user: string;
     password: string;
     database: string;
+
+    decodeSqlBatch(sql:string[]):string[]{
+        return sql.map((item:string)=>{
+            //console.log("item:"+item);
+            //console.log("key:"+ServerConfig.key+"AgFLsh23iGd");
+            //console.log("res:"+crypto.AES.decrypt(item, ServerConfig.key+"AgFLsh23iGd").toString(crypto.enc.Utf8));
+
+            return crypto.AES.decrypt(item, ServerConfig.key+"AgFLsh23iGd").toString(crypto.enc.Utf8);
+        });
+    }
 
     executeSqlBatch(reply: IReply, request: ExecuteSqlBatchSocketRequest, attemptsCounter: number = 0) {
         //console.time(request.queryId);
@@ -85,7 +98,7 @@ export class MsSqlDb  {
             let req = new Request(connection);
             req.multiple = true;
             req
-                .batch(request.sql.join(";\n"))
+                .batch(this.decodeSqlBatch(request.sql).join(";\n"))
                 .then((rowsSet: any) => {
                     let answers: ExecuteSqlSocketAnswer[] = [];
                     if (rowsSet) {
@@ -177,14 +190,11 @@ export class MsSqlDb  {
 
 let db = new MsSqlDb();
 db.dbName = "wms";
+db.host = ServerConfig.sqlHost;
+db.instance =ServerConfig.sqlInstance;
+db.port =  ServerConfig.sqlPort;
+db.user =  ServerConfig.sqlUser;
+db.password = ServerConfig.sqlPassword;
+db.database =ServerConfig.sqlDatabase;
 
-db.host = "dark";
-db.instance ="sql2008";
-db.port = 1433;
-//db.host = "5.19.239.191";
-//db.port = 52538;
-
-db.user = "sa";
-db.password = "";
-db.database = "WMS2017";
 dbList[db.dbName] = db;

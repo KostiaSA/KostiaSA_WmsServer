@@ -12,6 +12,7 @@
     "typescript": "^2.0.2"
   },
   "dependencies": {
+    "crypto-js": "^3.1.6",
     "hapi": "^15.0.3",
     "lodash": "^4.15.0",
     "msnodesqlv8": "^0.2.9",

@@ -25,7 +25,7 @@ let route: IRouteConfiguration = {
 
         let sqlReq: ExecuteSqlBatchSocketRequest = request.payload;
 
-        console.log({req: "execSql", dbName: sqlReq.dbName, sql: sqlReq.sql.join("\n")});
+        //console.log({req: "execSql", dbName: sqlReq.dbName, sql: sqlReq.sql.join("\n")});
 
         //console.log("executeSQL: " + socket.id + ", " + client.login + " from " + socket.handshake.address);
 
