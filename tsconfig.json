@@ -13,7 +13,9 @@
         "noLib": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "build"
+        "outDir": "build",
+        "strictNullChecks":true
+
     },
     "compileOnSave": true,
     "buildOnSave": false,

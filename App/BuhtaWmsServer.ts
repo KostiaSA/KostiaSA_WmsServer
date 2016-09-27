@@ -39,7 +39,7 @@ let route: IRouteConfiguration = {
         //reply("Hello Buhta WMS!");
         //console.log("request.payload.a.length");
         //console.log(request.payload.a.length);
-        //reply.response({aaa: "Ok", bbb: "ПИЗДЕЦ" + request.payload.a.length});
+        //reply.response({aaa: "Ok", bbb: "П" + request.payload.a.length});
     },
     config: {payload: {maxBytes: 104857600}}
 

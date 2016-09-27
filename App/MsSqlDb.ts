@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 import {IPool, config, Connection, Request, TYPES} from "mssql";
 import {IReply} from "hapi";
 import {ServerConfig} from "./ServerConfig";
-const  crypto = require("crypto-js");
+const crypto = require("crypto-js");
 
 let pools: { [connectionId: string]: Connection; } = {};
 
@@ -48,24 +48,23 @@ export interface ExecuteSqlBatchSocketAnswer {
 }
 
 
-
-export class MsSqlDb  {
+export class MsSqlDb {
     dbName: string;
 
     host: string;
-    instance:string;
+    instance: string;
     port: number;
     user: string;
     password: string;
     database: string;
 
-    decodeSqlBatch(sql:string[]):string[]{
-        return sql.map((item:string)=>{
+    decodeSqlBatch(sql: string[]): string[] {
+        return sql.map((item: string)=> {
             //console.log("item:"+item);
             //console.log("key:"+ServerConfig.key+"AgFLsh23iGd");
             //console.log("res:"+crypto.AES.decrypt(item, ServerConfig.key+"AgFLsh23iGd").toString(crypto.enc.Utf8));
 
-            return crypto.AES.decrypt(item, ServerConfig.key+"AgFLsh23iGd").toString(crypto.enc.Utf8);
+            return crypto.AES.decrypt(item, ServerConfig.key + "AgFLsh23iGd").toString(crypto.enc.Utf8);
         });
     }
 
@@ -73,7 +72,7 @@ export class MsSqlDb  {
         //console.time(request.queryId);
         let options = {instanceName: this.instance} as any;
         let config: config = {
-            driver: "msnodesqlv8",
+            //driver: "msnodesqlv8",
             pool: {
                 min: 0,
                 max: 20,
@@ -88,7 +87,7 @@ export class MsSqlDb  {
         }
 
         let connectionId = JSON.stringify(config);
-        let connection = pools[connectionId];
+        let connection: any = pools[connectionId];
         if (!connection) {
             connection = new Connection(config);
             pools[connectionId] = connection;
@@ -138,9 +137,10 @@ export class MsSqlDb  {
 
                 })
                 .catch((err) => {
+                    console.error({error:err,sql:this.decodeSqlBatch(request.sql).join(";\n")});
                     let answer: ExecuteSqlBatchSocketAnswer = {
-                        error: err.toString().replace("RequestError","sql-error"),
-                        errorSql: request.sql.join(";\n")
+                        error: err.toString().replace("RequestError", "sql-error"),
+                        errorSql: this.decodeSqlBatch(request.sql).join(";\n")
                     };
                     reply(answer);
                 });
@@ -163,25 +163,25 @@ export class MsSqlDb  {
         if (pools[connectionId] && connection && connection.connected) {
             doRequest();
         }
-        // else {
-        //     let counter = 0;
-        //     let interval = setInterval(()=> {
-        //         //console.log("interval",counter);
-        //         counter++;
-        //         if (counter > 1000 || !connection || !pools[connectionId]) {
-        //             clearInterval(interval);
-        //             let answer: ExecuteSqlBatchSocketAnswer = {
-        //                 error: `"mssql connection error, server:${config.server}, db:${config.database}, login:${config.user}`,
-        //                 errorSql: request.sql.join(";\n")
-        //             };
-        //             reply(answer);
-        //         }
-        //         else if (connection.connected) {
-        //             clearInterval(interval);
-        //             doRequest();
-        //         }
-        //     }, 1000)
-        // }
+        else {
+            let counter = 0;
+            let interval = setInterval(()=> {
+                //console.log("interval",counter);
+                counter++;
+                if (counter > 1000 || !connection || !pools[connectionId]) {
+                    clearInterval(interval);
+                    let answer: ExecuteSqlBatchSocketAnswer = {
+                        error: `"mssql connection error, server:${config.server}, db:${config.database}, login:${config.user}`,
+                        errorSql: request.sql.join(";\n")
+                    };
+                    reply(answer);
+                }
+                else if (connection.connected) {
+                    clearInterval(interval);
+                    doRequest();
+                }
+            }, 1000)
+        }
 
 
     }
@@ -191,10 +191,10 @@ export class MsSqlDb  {
 let db = new MsSqlDb();
 db.dbName = "wms";
 db.host = ServerConfig.sqlHost;
-db.instance =ServerConfig.sqlInstance;
-db.port =  ServerConfig.sqlPort;
-db.user =  ServerConfig.sqlUser;
+db.instance = ServerConfig.sqlInstance;
+db.port = ServerConfig.sqlPort;
+db.user = ServerConfig.sqlUser;
 db.password = ServerConfig.sqlPassword;
-db.database =ServerConfig.sqlDatabase;
+db.database = ServerConfig.sqlDatabase;
 
 dbList[db.dbName] = db;
